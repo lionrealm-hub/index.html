@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Place Search</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .top-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex-grow: 1;
+    }
+
+    .search-wrapper i {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 1.2rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 10px 10px 35px;
+      font-size: 1.2rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .place-section {
+      margin-top: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .letter-group {
+      margin-bottom: 1rem;
+    }
+
+    .letter-group h3 {
+      margin: 0;
+      padding: 5px 0;
+      background-color: #007BFF;
+      color: white;
+      padding-left: 10px;
+      border-radius: 4px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search" placeholder="Search by name...">
+      </div>
+      <button id="add-btn">Add Place</button>
+    </div>
+    <div class="place-section" id="place-section"></div>
+  </div>
+
+  <script>
+    let places = {
+      A: ["Acarigua", "Animas", "Antadó", "Aranza", "Arnage", "Atapirire"],
+      B: ["Bajo Chiquito", "Bandorito", "Barquisimeto", "Becordó", "Belmira", "Boca de Cajón", "Boca de El Pao", "Boca de Fanando", "Boca de Pepé", "Boca de Sipí", "Buenos Aires"],
+      C: ["Cagua Estado Aragua", "Caicedonia", "Calarca", "Carabobol", "Caracas Ydrogo", "Carmelo", "Carolina El", "Casa Paticula de Pizarro", "Chaco", "Chipatá", "Ciudad Velez", "Cojedes", "Condoto", "Condoto Chocó", "Concordia", "Confines", "Corcobado", "Curiguiró", "Cunday"],
+      D: ["Diraquillo", "Docampado", "Dulce Nombre de Jesus, Petare"],
+      E: ["El Caneco Los Pabres", "El Chaparro", "El Mannguito", "El Pao Barcelona", "El Sombrero", "El Tigre"],
+      F: [],
+      G: [],
+      H: [],
+      I: ["Inmaculada Concepción De Cunday"],
+      J: ["Junta"],
+      K: [],
+      L: ["La Guaria Spto Vargas", "Las Mercedes, Noanama", "Las Queseras", "Las Vegas", "Liriguare"],
+      M: ["Macapo", "Maracay", "Matiente", "MS de Fátima, El Mozereno"],
+      N: ["Neguá", "Noanamáe", "Nuestra Señora de Fatima Playa de Oro", "Nuestra Señora de Guadalupe", "Nuestra Señora del Carmen de Turbo", "Nuesta Sra del Carmen de Turbo", "Nuestra Señora del Socorro"],
+      O: [],
+      P: ["Paraguán", "Parraguia", "Pepé", "Pizarro", "Potedo", "Potedó", "Pueblo Viejo"],
+      Q: ["Quibdó"],
+      R: ["Rinaco"],
+      S: ["San Alejo, Boconó", "San Carlos", "San Felipe", "San Francisco de Asis", "San Jerónimo Novita", "San Jerónimo Nóvita, Chocó", "San José del Palmar", "San Juan Bautista", "San Pedro de Ingará", "San Rafael de Pizarro", "San Rafael de Pizarro, Sibirú", "Santa Iglesia S Pedro", "Santo materno, Chipitá", "Saramita", "Sierpe", "Sivirú", "Sta Catalina de Catrú", "Sto Cristo Paraguán"],
+      T: ["Taren Agregación Plaza de Oro", "Táriba", "Tinaquillo", "Tinaco", "Togoromá", "Torreidó", "Tribugá"],
+      U: [],
+      V: ["Valencia", "Villecito", "Virudó"],
+      W: [],
+      X: [],
+      Y: [],
+      Z: ["Zapatoca, Santander"]
+    };
+
+    const searchInput = document.getElementById("search");
+    const placeSection = document.getElementById("place-section");
+    const addBtn = document.getElementById("add-btn");
+
+    function renderPlaces(filter = "") {
+      placeSection.innerHTML = "";
+      const filterLower = filter.toLowerCase();
+
+      Object.keys(places).sort().forEach(letter => {
+        const group = places[letter].filter(place => place.toLowerCase().includes(filterLower));
+        if (group.length > 0) {
+          const section = document.createElement("div");
+          section.className = "letter-group";
+
+          const heading = document.createElement("h3");
+          heading.textContent = letter;
+          section.appendChild(heading);
+
+          const ul = document.createElement("ul");
+          group.forEach(place => {
+            const li = document.createElement("li");
+            li.textContent = place;
+            ul.appendChild(li);
+          });
+
+          section.appendChild(ul);
+          placeSection.appendChild(section);
+        }
+      });
+    }
+
+    searchInput.addEventListener("input", () => {
+      renderPlaces(searchInput.value);
+    });
+
+    addBtn.addEventListener("click", () => {
+      const newPlace = prompt("Enter a new place name:");
+      if (newPlace && newPlace.trim()) {
+        const firstLetter = newPlace.trim()[0].toUpperCase();
+        if (!places[firstLetter]) {
+          places[firstLetter] = [];
+        }
+        places[firstLetter].push(newPlace.trim());
+        renderPlaces(searchInput.value);
+      }
+    });
+
+    renderPlaces();
+  </script>
+</body>
+</html>
